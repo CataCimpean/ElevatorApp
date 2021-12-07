@@ -35,7 +35,7 @@ namespace ElevatorApp.BLL
 
         public void SetDestination(string floorsOptions)
         {
-            Console.WriteLine($"Please tap the floor number [{string.Join(",", floorsOptions)}]....");
+            Console.WriteLine($"Please tap the floor number [{floorsOptions}]....");
 
             if (!int.TryParse(Console.ReadLine(), out _selectedFloor))
                 throw new InvalidData(ExMessages.INVALID_FLOOR_NO);
