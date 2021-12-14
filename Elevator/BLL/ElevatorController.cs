@@ -25,24 +25,21 @@ namespace ElevatorApp.BLL
                 if (_building.NumberOfFloors != 10)
                     throw new InvalidData(ExMessages.OUT_OF_BOUND_FLOOR_NO);
 
-
                 //Processing outside command
                 _outsideRequestController.SolveOutsideRequest(outSideRequest, _building);
-
 
                 //Processing inside command
                 _selectedElevator = _outsideRequestController.Elevator;
                 _insideRequestController = new InsideRequestController();
-                _insideRequestController.SolveInsideRequest(_selectedElevator, new Request(_selectedElevator.Floor < _selectedFloor ? Direction.UP : Direction.DOWN, _selectedFloor));
+                _insideRequestController.SolveInsideRequest(_selectedElevator, new Request(_selectedElevator.CurrentPosition < _selectedFloor ? Direction.UP : Direction.DOWN, _selectedFloor));
                 
-
                 //Reset elevator state
                 ResetElevatorState(_selectedElevator);
 
             }
             catch (InvalidData dataException)
             {
-                Console.WriteLine($"InvalidDataException:{dataException}");
+                Console.WriteLine($"InvalidDataException:{dataException.Message}");
             }
             catch (Exception exception)
             {

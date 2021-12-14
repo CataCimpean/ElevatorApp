@@ -16,7 +16,7 @@ namespace ElevatorApp.BLL
         public void SolveInsideRequest(Elevator selectedElevator, Request insideRequest)
         {
             int[] floors = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-            var floorsOptions = string.Join(",", floors.Where(val => val != selectedElevator.Floor).ToArray());
+            var floorsOptions = string.Join(",", floors.Where(val => val != selectedElevator.CurrentPosition).ToArray());
             var iteration = 0;
             
             do
@@ -26,9 +26,13 @@ namespace ElevatorApp.BLL
 
                 SetDestination(floorsOptions);
 
-            } while (_selectedFloor == selectedElevator.Floor);
+            } while (_selectedFloor == selectedElevator.CurrentPosition);
 
-            SolveElevatorRequest(selectedElevator, new Request(selectedElevator.Direction, _selectedFloor));
+
+            AddNewCommand(ref selectedElevator, _selectedFloor);
+
+            SolveElevatorRequest(selectedElevator: selectedElevator,
+                                 request:new Request(selectedElevator.Direction, _selectedFloor));
 
             Console.WriteLine("Have a nice day !");
         }

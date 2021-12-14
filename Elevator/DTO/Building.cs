@@ -14,15 +14,18 @@ namespace ElevatorApp.DTO
             var random = new Random();
             Elevators = new List<Elevator>();
 
+            int idx = 0;
             //Generate Elevators with random values for Direction/Floor/State
             while (Elevators.Count < NumberOfElevators)
             {
                 var elevatorObj = new Elevator()
                 {
                     Tag = $"Elevator[{Elevators.Count}]",
+                    CurrentPosition = idx++ == 0 ? 1 : 10,
                     Direction = (Direction)random.Next(1, Enum.GetNames(typeof(Direction)).Length),
-                    Floor = random.Next(0, NumberOfFloors),
-                    State = (State)random.Next(1, Enum.GetNames(typeof(State)).Length)
+                    State = (State)random.Next(1, Enum.GetNames(typeof(State)).Length),
+                    OutsideCommands = new List<int> { },
+                    InsideCommands = new List<int> { }
                 };
                 Elevators.Add(elevatorObj);
                 Console.WriteLine(elevatorObj);

@@ -1,6 +1,7 @@
 ﻿using ElevatorApp.DTO;
 using ElevatorApp.Exceptions;
 using System;
+using System.Linq;
 
 namespace ElevatorApp.BLL
 {
@@ -11,14 +12,23 @@ namespace ElevatorApp.BLL
     public class OutsideRequestController : ElevatorFloorController, IOutsideRequestController
     {
         public Elevator Elevator;
-        
+
         public void SolveOutsideRequest(Request outsideRequest, Building building)
         {
             CallTheCloseElevator(outsideRequest, building);
+
+            AddNewCommand(ref Elevator, outsideRequest.SourceFloor, true);
+
             Console.WriteLine($"Selected {Elevator.Tag}.. Waiting for it");
 
-            if (Elevator.Floor != outsideRequest.SourceFloor)
-                SolveElevatorRequest(Elevator, new Request(Elevator.Floor < outsideRequest.SourceFloor ? Direction.UP : Direction.DOWN,outsideRequest.SourceFloor));
+            Elevator.OutsideCommands = Elevator.Direction == Direction.UP ?
+                                       Elevator.OutsideCommands.OrderBy(c => c).ToList() :
+                                       Elevator.OutsideCommands.OrderByDescending(c => c).ToList();
+
+            if (Elevator.CurrentPosition != outsideRequest.SourceFloor)
+                SolveElevatorRequest(selectedElevator: Elevator,
+                                     request: new Request(Elevator.CurrentPosition < outsideRequest.SourceFloor ? Direction.UP : Direction.DOWN, outsideRequest.SourceFloor),
+                                     outsideCommand: true);
         }
 
         public void CallTheCloseElevator(Request outsideRequest, Building building)
@@ -33,21 +43,23 @@ namespace ElevatorApp.BLL
             var elevatorA = building.Elevators[0];
             var elevatorB = building.Elevators[1];
 
-            var distA = Math.Abs(outsideRequest.SourceFloor - elevatorA.Floor);
-            var distB = Math.Abs(outsideRequest.SourceFloor - elevatorB.Floor);
 
-            if (distA < distB)
+            var requestDirection = outsideRequest.Direction;
+            var elevatorADirection = elevatorA.Direction;
+            var elevatorBDirection = elevatorB.Direction;
+
+            Elevator = elevatorA;
+
+            if ((elevatorADirection == requestDirection)
+                && (((elevatorA.Direction == Direction.DOWN && elevatorA.CurrentPosition >= outsideRequest.SourceFloor)
+                    || (elevatorA.Direction == Direction.UP && elevatorA.CurrentPosition <= outsideRequest.SourceFloor))))
+
                 Elevator = elevatorA;
-            else if (distA == distB)
-            {
-                if (elevatorA.Direction == outsideRequest.Direction)
-                    Elevator = elevatorA;
-                else if (elevatorB.Direction == outsideRequest.Direction)
-                    Elevator = elevatorB;
-                else
-                    Elevator = elevatorA.Direction < elevatorB.Direction ? elevatorA : elevatorB;
-            }
-            else
+
+            else if ((elevatorBDirection == requestDirection)
+                && ((elevatorB.Direction == Direction.DOWN && elevatorB.CurrentPosition >= outsideRequest.SourceFloor)
+                    || (elevatorB.Direction == Direction.UP && elevatorB.CurrentPosition <= outsideRequest.SourceFloor)))
+
                 Elevator = elevatorB;
         }
     }
